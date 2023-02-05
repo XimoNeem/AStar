@@ -6,14 +6,15 @@ using TMPro;
 [RequireComponent(typeof(Collider))]
 public class Tile : MonoBehaviour
 {
-    [SerializeField] private bool IsOccupied = false;
-    [SerializeField] private bool IsTarget = false;
+    public bool IsOccupied = false;
+    //[SerializeField] private bool IsTarget = false;
     public int ID { get; }
     [SerializeField] private LayerMask _layerMask;
 
+    public float Weight { get; set; }
+
     public float TileLength { get; private set; } = 1;
     public float TileHeight { get; private set; } = 1;
-    public int depth { get; private set; }
 
     private SpriteRenderer _spriteRenderer;
     private TMP_Text _text;
@@ -31,7 +32,6 @@ public class Tile : MonoBehaviour
     private void Start()
     {
         _defaultPosition = this.transform.position;
-        SetDepth();
         ChangeSize(1);
     }
 
@@ -39,24 +39,30 @@ public class Tile : MonoBehaviour
     {
         Tile tile = this;
         List<Tile> result = new List<Tile>();
-        List<RaycastHit2D> raycastHits = new List<RaycastHit2D>();
 
-        raycastHits.AddRange(Physics2D.RaycastAll(new Vector2(tile._collider.bounds.center.x, tile._collider.bounds.center.y), Vector2.Lerp(Vector2.up, Vector2.right, 0.5f), 0.5f, _layerMask));
-        raycastHits.AddRange(Physics2D.RaycastAll(new Vector2(tile._collider.bounds.center.x, tile._collider.bounds.center.y), Vector2.Lerp(Vector2.up, Vector2.left, 0.5f), 0.5f, _layerMask));
-        raycastHits.AddRange(Physics2D.RaycastAll(new Vector2(tile._collider.bounds.center.x, tile._collider.bounds.center.y), Vector2.Lerp(Vector2.down, Vector2.right, 0.5f), 0.5f, _layerMask));
-        raycastHits.AddRange(Physics2D.RaycastAll(new Vector2(tile._collider.bounds.center.x, tile._collider.bounds.center.y), Vector2.Lerp(Vector2.down, Vector2.left, 0.5f), 0.5f, _layerMask));
+        RaycastHit hit;
 
-        foreach (var item in raycastHits)
+        Ray[] directions = new Ray[]
+                {
+                    new Ray(tile.transform.position, tile.transform.forward),
+                    new Ray(tile.transform.position, -tile.transform.forward),
+                    new Ray(tile.transform.position, tile.transform.right),
+                    new Ray(tile.transform.position, -tile.transform.right),
+                };
+
+        foreach (var item in directions)
         {
-            Debug.Log(item.transform.name);
-            try
+            if (Physics.Raycast(item, out hit, 1))
             {
-                Tile newTile = item.transform.GetComponent<Tile>();
-                if (newTile != this & !newTile.IsOccupied) { result.Add(newTile); }
-            }
-            catch (System.Exception)
-            {
-                throw;
+                try
+                {
+                    Tile newTile = hit.transform.GetComponent<Tile>();
+                    if (newTile != this & !newTile.IsOccupied) { result.Add(newTile); }
+                }
+                catch (System.Exception)
+                {
+                    throw;
+                }
             }
         }
 
@@ -72,7 +78,7 @@ public class Tile : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            print("Target");
+            FindObjectOfType<PathFinder>().GeneratePath(this);
         }
     }
     private void OnMouseEnter()
@@ -104,16 +110,6 @@ public class Tile : MonoBehaviour
                 Destroy(item.gameObject);
             }
         }
-    }
-    public void SetDepth(int value)
-    {
-        depth = value;
-        if (_spriteRenderer != null) { _spriteRenderer.sortingOrder = depth; }
-        if (_text != null) { }
-    }
-    public void SetDepth()
-    {
-        SetDepth(depth);
     }
     public void ChangeSize(float size)
     {

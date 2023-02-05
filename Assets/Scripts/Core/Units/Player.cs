@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
     public Tile CurrentTile;
     private Coroutine _moveCoroutine;
+
 
     private void Update()
     {
@@ -18,6 +20,7 @@ public class Player : MonoBehaviour
             }
 
             List<Tile> tiles = CurrentTile.GetNearestTiles();
+            if (tiles.Count == 0) { SceneManager.LoadScene(0); }
             MoveToTile(tiles[Random.Range(0, tiles.Count)]);
         }
     }
@@ -33,7 +36,7 @@ public class Player : MonoBehaviour
     {
         while (this.transform.position != target)
         {
-            this.transform.position = Vector3.Lerp(this.transform.position, target, Time.fixedDeltaTime * 5);
+            this.transform.position = Vector3.Lerp(this.transform.position, target, Time.fixedDeltaTime * 30);
             yield return new WaitForFixedUpdate();
         }
         StopCoroutine(_moveCoroutine);

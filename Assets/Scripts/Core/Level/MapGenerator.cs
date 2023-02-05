@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 
 public class MapGenerator : MonoBehaviour
 {
-    [SerializeField] private GameObject _building;
     [SerializeField] private GameObject _grassTile;
 
     [SerializeField] private int _length = 10, _height = 10;
@@ -60,7 +59,7 @@ public class MapGenerator : MonoBehaviour
         }*/
     }
 
-    private IEnumerator GenerateBuildings()
+   /* private IEnumerator GenerateBuildings()
     {
         foreach (var item in _tiles)
         {
@@ -76,7 +75,7 @@ public class MapGenerator : MonoBehaviour
 
             yield return new WaitForSecondsRealtime(0.005f);
         }
-    }
+    }*/
 
     private void CreateTile(GameObject prefab, Vector3 position, int depth, int row)
     {
@@ -85,7 +84,6 @@ public class MapGenerator : MonoBehaviour
         newTile.transform.localScale = Vector3.zero;
 
         Tile tile = newTile.GetComponent<Tile>();
-        tile.SetDepth(depth);
 
         _tiles[row].Add(tile);
     }
