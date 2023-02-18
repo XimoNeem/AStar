@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PathFinder : MonoBehaviour
 {
-    public Transform marker;
     private Player _player;
     private Tile _target;
 
@@ -19,56 +18,82 @@ public class PathFinder : MonoBehaviour
 
     public void GeneratePath(Tile target)
     {
+        Player.Instance.IsMooving = true;
+
+        foreach (var item in FindObjectsOfType<Tile>())
+        {
+            item.SetColor(Color.white);
+            item.ChangeSize(1);
+        }
+
+        _checkTiles = new List<Tile>();
+        _closedTiles = new List<Tile>();
+
+        _checkTiles.Add(_player.CurrentTile);
+
         _target = target;
         StartCoroutine(Search());
     }
 
     public IEnumerator Search()
     {
-        //List<Tile> result = new List<Tile>();
-        _player = FindObjectOfType<Player>();
-        _currentTile = _player.CurrentTile;
-
-        _checkTiles = new List<Tile>();
-        _closedTiles = new List<Tile>();
-
-        while (_currentTile != _target)
+        while (true)
         {
-            List<Tile> newTiles = new List<Tile>();
-            foreach (var item in _currentTile.GetNearestTiles())
-            {
-                if (!item.IsOccupied && !_checkTiles.Contains(item) && !_closedTiles.Contains(item))
-                {
-                    item.Weight = getTileWeight(item);
-                    newTiles.Add(item);
-                    item.ChangeSize(0.7f);
-                }
-            }
-            if (newTiles.Count == 0)
-            {
-                _checkTiles.Remove(_currentTile);
-                _closedTiles.Add(_currentTile);
-            }
-
-            _checkTiles.AddRange(newTiles);
             _checkTiles.Sort((x, y) => x.Weight.CompareTo(y.Weight));
 
-            _closedTiles.Add(_currentTile);
+            if (_checkTiles.Count == 0)
+            {
+                Player.Instance.StaySolid();
+                StopAllCoroutines();
+            }
+
             _currentTile = _checkTiles[0];
+            _checkTiles.Remove(_currentTile);
             _closedTiles.Add(_currentTile);
-            marker.position = _currentTile.transform.position;
+            _currentTile.SetColor(Color.red);
 
-            yield return new WaitForSeconds(0.1f);
+            if (_currentTile == _target)
+            {
+                SendPathToPlayer();
+                StopAllCoroutines();
+            }
+
+            foreach (var item in _currentTile.GetNearestTiles())
+            {
+                yield return new WaitForEndOfFrame();
+
+                if (item.IsOccupied || _closedTiles.Contains(item)) continue;
+
+                if (!_checkTiles.Contains(item))
+                {
+                    item.Weight = getTileWeight(item);
+                    item.FromTile = _currentTile;
+                    _checkTiles.Add(item);
+                    item.SetColor(Color.blue);
+                }
+            }
+
+            yield return new WaitForEndOfFrame();
         }
+    }
 
-        Debug.Log("Done");
-        //return result;
+    private void SendPathToPlayer()
+    {
+        List<Tile> moveQuary = new List<Tile>();
+        Tile current = _target;
+        while (current.FromTile != _player.CurrentTile)
+        {
+            moveQuary.Add(current);
+            current = current.FromTile;
+        }
+        moveQuary.Add(current);
+        moveQuary.Reverse();
+        _player.MoveByPath(moveQuary);
     }
 
     private float getTileWeight(Tile tile)
     {
         float result = Vector3.Distance(tile.transform.position, _target.transform.position);
-
         return result;
     }
 }

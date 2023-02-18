@@ -1,38 +1,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 [RequireComponent(typeof(Collider))]
 public class Tile : MonoBehaviour
 {
     public bool IsOccupied = false;
-    //[SerializeField] private bool IsTarget = false;
-    public int ID { get; }
-    [SerializeField] private LayerMask _layerMask;
+    public float TileLength = 1, TileHeight = 1;
 
     public float Weight { get; set; }
+    public Tile FromTile { get; set; }
 
-    public float TileLength { get; private set; } = 1;
-    public float TileHeight { get; private set; } = 1;
+    private Vector3 _defaulSize = Vector3.one, _defaultPosition = Vector3.zero;
+    private Color _defautColor;
 
-    private SpriteRenderer _spriteRenderer;
-    private TMP_Text _text;
-    private Collider _collider;
-    private Vector3 _defaulSize = Vector3.one;
-    private Vector3 _defaultPosition = Vector3.zero;
+    private const float ANIMATION_SPEED = 10;
 
     virtual public void Awake()
     {
-        _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        _collider = GetComponent<Collider>();
-        _text = GetComponentInChildren<TMP_Text>();
+        _defautColor = GetComponentInChildren<MeshRenderer>().material.color;
     }
 
     private void Start()
     {
         _defaultPosition = this.transform.position;
-        ChangeSize(1);
+        ChangeSize(1f);
     }
 
     public List<Tile> GetNearestTiles()
@@ -73,22 +65,45 @@ public class Tile : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(1))
         {
+            if (Player.Instance.IsMooving || this == Player.Instance.CurrentTile) return;
             SetOccupied(!IsOccupied);
         }
 
         if (Input.GetMouseButtonDown(0))
         {
+            if (Player.Instance.IsMooving || this == Player.Instance.CurrentTile) return;
             FindObjectOfType<PathFinder>().GeneratePath(this);
         }
     }
     private void OnMouseEnter()
     {
-        ChangeSize(0.8f, 0.5f);
+        if (Player.Instance.IsMooving || this == Player.Instance.CurrentTile) return;
+        ChangeSize(0.8f, 0.35f);
     }
 
     private void OnMouseExit()
     {
+        if (Player.Instance.IsMooving) return;
         ChangeSize(1f);
+    }
+
+    public void SetDefaultColor(Color color)
+    {
+        _defautColor = color;
+    }
+
+    public void SetColor(Color color)
+    {
+        GetComponentInChildren<MeshRenderer>().material.color = color;
+        if (_defautColor == null)
+        {
+            _defautColor = color;
+        }
+    }
+
+    public void ResetColor()
+    {
+        GetComponentInChildren<MeshRenderer>().material.color = _defautColor;
     }
 
     public void SetOccupied(bool state)
@@ -127,8 +142,8 @@ public class Tile : MonoBehaviour
 
         while (this.transform.localScale != newSize || this.transform.position != newPosition)
         {
-            this.transform.position = Vector3.Lerp(this.transform.position, newPosition, Time.fixedDeltaTime * 5);
-            this.transform.localScale = Vector3.Lerp(this.transform.localScale, newSize, Time.fixedDeltaTime * 5);
+            this.transform.position = Vector3.Lerp(this.transform.position, newPosition, Time.fixedDeltaTime * ANIMATION_SPEED);
+            this.transform.localScale = Vector3.Lerp(this.transform.localScale, newSize, Time.fixedDeltaTime * ANIMATION_SPEED);
             yield return new WaitForFixedUpdate();
         }
 
