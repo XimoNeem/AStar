@@ -71,7 +71,7 @@ public class Tile : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            if (Player.Instance.IsMooving || this == Player.Instance.CurrentTile) return;
+            if (Player.Instance.IsMooving || this == Player.Instance.CurrentTile || this.IsOccupied) return;
             FindObjectOfType<PathFinder>().GeneratePath(this);
         }
     }

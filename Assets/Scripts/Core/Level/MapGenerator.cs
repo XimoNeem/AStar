@@ -29,9 +29,9 @@ public class MapGenerator : MonoBehaviour
         StartCoroutine(GenerateLevel());
     }
 
-    private void Update()
+    public void ReloadScene()
     {
-        if (Input.GetKeyDown(KeyCode.R)) { SceneManager.LoadScene(0); }
+        SceneManager.LoadScene(0);
     }
 
     public IEnumerator GenerateLevel()
