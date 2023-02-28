@@ -2,8 +2,6 @@
 
 # A* Pathfinding demo
 
-#### Sample bot for Telegram, demo solution for internet sellers. Qiwi payment system is used for billing. Data stored in MySQL remote database.
-
 ### 🌐 Try it here 
 
 - [GAME LINK](https://miknikik.itch.io/star-demo)
