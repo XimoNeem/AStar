@@ -1,4 +1,4 @@
-![ezgif-2-c432314dd0](https://user-images.githubusercontent.com/57218551/220180240-4a8e9f2e-8f95-46f9-8fb4-54d62bde9563.gif)
+https://user-images.githubusercontent.com/57218551/222113974-833944c1-d0bd-4c7a-9346-6f191a09c74d.mp4
 
 # A* Pathfinding demo
 
